@@ -1,10 +1,10 @@
 package game;
 
+import model.Coordinates;
 import model.Ship;
+import model.Status;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Game {
 
@@ -30,16 +30,102 @@ public class Game {
     }
 
     public void initializeGame() {
+        boolean intersect = true;
         createMap();
+        initializeShips();
+        while(intersect) {
+            ships.forEach(c -> c.getCoordinates().clear());
+            placeShips(ships);
+            intersect = doesIntersect();
+        }
     }
 
     public void start() {
         while (isRunning) {
             printMap();
             input.getInput(columns);
+            shot();
+            isRunning = !isGameWon();
         }
         printMap();
         System.out.println("Congratulations, you won!");
+    }
+
+    public void placeShips(List<Ship> ships) {
+        boolean shipPlaced;
+        for (Ship ship : ships) {
+            shipPlaced = false;
+            while (!shipPlaced) {
+                Random rand = new Random();
+                Coordinates startingIndex = new Coordinates(rand.nextInt(10), rand.nextInt(10));
+                if (ship.isHorizontal()) {
+                    shipPlaced = ship.checkBoundaries(startingIndex.getX());
+                } else {
+                    shipPlaced = ship.checkBoundaries(startingIndex.getY());
+                }
+            }
+        }
+    }
+
+    public boolean doesIntersect() {
+        List<Coordinates> allCoordinates = new ArrayList<>();
+        Set<List<Integer>> duplicates = new HashSet<>();
+        for (Ship ship : ships) {
+            allCoordinates.addAll(ship.getCoordinates());
+        }
+        return allCoordinates.stream().anyMatch(p -> !duplicates.add(List.of(p.getX(), p.getY())));
+    }
+
+    public boolean isGameWon() {
+        for (Ship ship : ships) {
+            if (!ship.isSunk()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public void markCoordinateStatusAsHit(Ship ship, int x, int y) {
+        for (Coordinates coordinate : ship.getCoordinates()) {
+            if (coordinate.getX() == x && coordinate.getY() == y) {
+                coordinate.setStatus(Status.HIT);
+            }
+        }
+    }
+
+    private void initializeShips() {
+        Random rand = new Random();
+        boolean horizontal;
+        for (int i = 0; i < 2; i++) {
+            horizontal = rand.nextBoolean();
+            ships.add(new Ship(DESTROYER, shipTypes.get(DESTROYER), horizontal));
+        }
+        horizontal = rand.nextBoolean();
+        ships.add(new Ship(BATTLESHIP, shipTypes.get(BATTLESHIP), horizontal));
+    }
+
+    public void markShipAsSunkOnTheBoard(Ship ship) {
+        if(ship.isSunk()) {
+            for (Coordinates coordinate : ship.getCoordinates()) {
+                map[coordinate.getX()][coordinate.getY()] = 'S';
+            }
+        }
+    }
+
+    private void shot() {
+        for (Ship ship : ships) {
+            if (map[input.x][input.y] == 'H' || map[input.x][input.y] == 'S') {
+                break;
+            }
+            if (ship.isHit(input.x, input.y)) {
+                map[input.x][input.y] = 'H';
+                markCoordinateStatusAsHit(ship, input.x, input.y);
+                markShipAsSunkOnTheBoard(ship);
+                break;
+            } else {
+                map[input.x][input.y] = 'M';
+            }
+        }
     }
 
     public void createMap() {
