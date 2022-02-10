@@ -1,9 +1,8 @@
 package model;
-
-import model.Coordinates;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import static game.Game.shipTypes;
 
 public class Ship {
 
@@ -22,13 +21,34 @@ public class Ship {
     }
 
     public boolean isSunk() {
-        for (model.Coordinates coordinate : coordinates) {
-            if (coordinate.getStatus().equals(model.Status.NOT_HIT)) {
+        if (coordinates.size() < 1) return false;
+        for (Coordinates coordinate : coordinates) {
+            if (coordinate.getStatus().equals(Status.NOT_HIT)) {
                 return false;
             }
         }
         this.setSunk(true);
         return true;
+    }
+
+    public boolean checkBoundaries(int startingIndex) {
+        int endingIndex = getMaxEndingIndex(startingIndex, shipTypes.get(getName()));
+        if (!(startingIndex <= endingIndex && endingIndex < 10)) {
+            return false;
+        } else {
+            addCoordinatesToShip(startingIndex, endingIndex);
+            return true;
+        }
+    }
+
+    private void addCoordinatesToShip(int startingIndex, int secondIndex) {
+        for (int i = secondIndex; i >= startingIndex; i--) {
+            if (this.isHorizontal()) {
+                getCoordinates().add(new Coordinates(i, secondIndex));
+            } else {
+                getCoordinates().add(new Coordinates(secondIndex, i));
+            }
+        }
     }
 
     public boolean isHit(int x, int y) {
@@ -61,3 +81,4 @@ public class Ship {
         return endIndex + length - 1;
     }
 }
+
