@@ -6,15 +6,13 @@ import static game.Game.shipTypes;
 
 public class Ship {
 
-    private int length;
     private boolean horizontal;
     private boolean isSunk;
     private String name;
     private List<Coordinates> coordinates;
 
-    public Ship(String name, int length, boolean horizontal) {
+    public Ship(String name, boolean horizontal) {
         this.name = name;
-        this.length = length;
         this.horizontal = horizontal;
         this.isSunk = false;
         this.coordinates = new ArrayList<>();

@@ -14,7 +14,7 @@ public class Game {
     private static final String BATTLESHIP = "Battleship";
     private static final String DESTROYER = "Destroyer";
     private static final int SIZE = 10;
-    private static final char[][] map = new char[SIZE][SIZE];
+    private char[][] map = new char[SIZE][SIZE];
     public static final Map<String, Integer> shipTypes = Map.of(
             BATTLESHIP, 5,
             DESTROYER, 4
@@ -44,7 +44,7 @@ public class Game {
         while (isRunning) {
             printMap();
             input.getInput(columns);
-            shot();
+            shot(input.x, input.y);
             isRunning = !isGameWon();
         }
         printMap();
@@ -98,10 +98,10 @@ public class Game {
         boolean horizontal;
         for (int i = 0; i < 2; i++) {
             horizontal = rand.nextBoolean();
-            ships.add(new Ship(DESTROYER, shipTypes.get(DESTROYER), horizontal));
+            ships.add(new Ship(DESTROYER, horizontal));
         }
         horizontal = rand.nextBoolean();
-        ships.add(new Ship(BATTLESHIP, shipTypes.get(BATTLESHIP), horizontal));
+        ships.add(new Ship(BATTLESHIP, horizontal));
     }
 
     public void markShipAsSunkOnTheBoard(Ship ship) {
@@ -112,18 +112,18 @@ public class Game {
         }
     }
 
-    private void shot() {
+    public void shot(int x, int y) {
         for (Ship ship : ships) {
-            if (map[input.x][input.y] == 'H' || map[input.x][input.y] == 'S') {
+            if (map[x][y] == 'H' || map[x][y] == 'S') {
                 break;
             }
-            if (ship.isHit(input.x, input.y)) {
-                map[input.x][input.y] = 'H';
-                markCoordinateStatusAsHit(ship, input.x, input.y);
+            if (ship.isHit(x, y)) {
+                map[x][y] = 'H';
+                markCoordinateStatusAsHit(ship, x, y);
                 markShipAsSunkOnTheBoard(ship);
                 break;
             } else {
-                map[input.x][input.y] = 'M';
+                map[x][y] = 'M';
             }
         }
     }
@@ -154,5 +154,11 @@ public class Game {
         }
     }
 
+    public List<Ship> getShips() {
+        return this.ships;
+    }
 
+    public char[][] getMap() {
+        return this.map;
+    }
 }
